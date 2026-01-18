@@ -104,6 +104,9 @@ def main():
     gps_mode = 0
     sats_visible = 0
     sats_used = 0
+    latitude = 0.0
+    longitude = 0.0
+    altitude = 0.0
 
     try:
         while True:
@@ -128,13 +131,22 @@ def main():
                 if packet.mode >= 2:  # 2D or 3D fix
                     # Speed comes in m/s, convert to mph
                     current_speed = packet.speed() * 2.237 if packet.speed() else 0
+                    latitude = packet.lat
+                    longitude = packet.lon
+                    altitude = packet.alt if packet.mode == 3 else 0.0
                 else:
                     current_speed = 0
+                    latitude = 0.0
+                    longitude = 0.0
+                    altitude = 0.0
             except Exception:
                 gps_mode = 0
                 sats_visible = 0
                 sats_used = 0
                 current_speed = 0
+                latitude = 0.0
+                longitude = 0.0
+                altitude = 0.0
 
             # Track max speed during recording
             if state == State.RECORDING:
@@ -187,6 +199,11 @@ def main():
                 gps_color = RED
                 gps_status = f"GPS: {mode_str} | Sats: {sats_visible} visible (waiting for fix...)"
             print(f"{gps_color}{gps_status}{RESET}")
+            if gps_mode >= 2:
+                print(f"Lat: {latitude:.6f}  Lon: {longitude:.6f}")
+                if gps_mode == 3:
+                    alt_ft = altitude * 3.281  # meters to feet
+                    print(f"Alt: {alt_ft:.0f} ft")
             print()
             # Speed color: yellow=moving, green=recording, blue=complete
             if state == State.COMPLETE:
