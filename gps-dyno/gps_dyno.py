@@ -93,6 +93,9 @@ def main():
     current_speed = 0
     max_speed = 0
     prev_speed = None  # None means no previous reading yet
+    gps_mode = 0
+    sats_visible = 0
+    sats_used = 0
 
     try:
         while True:
@@ -111,12 +114,18 @@ def main():
             # Get GPS data
             try:
                 packet = gpsd.get_current()
+                gps_mode = packet.mode
+                sats_visible = packet.sats
+                sats_used = packet.sats_valid
                 if packet.mode >= 2:  # 2D or 3D fix
                     # Speed comes in m/s, convert to mph
                     current_speed = packet.speed() * 2.237 if packet.speed() else 0
                 else:
                     current_speed = 0
             except Exception:
+                gps_mode = 0
+                sats_visible = 0
+                sats_used = 0
                 current_speed = 0
 
             # Track max speed during recording
@@ -160,6 +169,14 @@ def main():
             print("═══ GPS DYNO ═══")
             print(f"Vehicle: {vehicle_name} ({weight_lbs} lbs)")
             print(f"Test: {start_speed} → {end_speed} mph")
+            print()
+            # GPS satellite status
+            mode_str = {0: "No data", 1: "No fix", 2: "2D fix", 3: "3D fix"}.get(gps_mode, "Unknown")
+            if gps_mode >= 2:
+                gps_status = f"GPS: {mode_str} | Sats: {sats_used}/{sats_visible}"
+            else:
+                gps_status = f"GPS: {mode_str} | Sats: {sats_visible} visible (waiting for fix...)"
+            print(gps_status)
             print()
             print(f"Speed: {current_speed:.1f} mph")
             print(f"Status: {state.value}")
