@@ -43,9 +43,60 @@ See the `keyboard-config/` directory for:
 - Gamepad button mappings
 - Complete input device information
 
-These files can be used to restore your custom configuration after installing Arch Linux.
+These files can be used to restore your custom configuration on a fresh Arch Linux ARM install.
 
 ## Operating System
 
-**Current**: Debian GNU/Linux 11 (bullseye)
-**Planned**: Arch Linux
+**OS**: Arch Linux ARM
+**Kernel**: 6.12.45-1-uconsole-rpi64
+
+## USB GPS Antenna
+
+### Hardware
+- **Device**: USB-Serial Controller with GPS receiver
+- **Chip**: Prolific PL2303 USB-to-Serial adapter
+- **USB ID**: 067b:23a3
+- **Manufacturer**: Prolific Technology Inc.
+- **Serial Device**: `/dev/ttyUSB0`
+- **Baud Rate**: 4800
+
+### Software
+- **Daemon**: gpsd 3.27.5
+- **Protocol**: NMEA0183
+
+### Installation
+
+```bash
+# Install gpsd
+sudo pacman -S gpsd
+
+# Add user to uucp group for serial access without sudo
+sudo usermod -aG uucp $USER
+
+# Configure gpsd (edit /etc/default/gpsd)
+# Set DEVICES="/dev/ttyUSB0"
+
+# Enable and start gpsd
+sudo systemctl enable gpsd.socket gpsd.service
+sudo systemctl start gpsd.socket gpsd.service
+```
+
+### Testing
+
+```bash
+# View raw NMEA data
+sudo cat /dev/ttyUSB0
+
+# View gpsd JSON output
+gpspipe -w localhost
+
+# Interactive GPS monitor
+cgps
+
+# GPS monitor with more detail
+gpsmon
+```
+
+### Configuration Backup
+
+See `gps-config/` directory for gpsd configuration files.

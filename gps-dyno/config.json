@@ -1,0 +1,10 @@
+{
+  "vehicle": {
+    "name": "My Car",
+    "weight_lbs": 3500
+  },
+  "test": {
+    "start_speed_mph": 30,
+    "end_speed_mph": 90
+  }
+}
