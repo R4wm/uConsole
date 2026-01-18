@@ -66,6 +66,14 @@ def clear_screen():
     print("\033[2J\033[H", end="")
 
 
+# ANSI color codes
+RED = "\033[91m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+BLUE = "\033[94m"
+RESET = "\033[0m"
+
+
 def main():
     config = load_config()
 
@@ -170,15 +178,26 @@ def main():
             print(f"Vehicle: {vehicle_name} ({weight_lbs} lbs)")
             print(f"Test: {start_speed} → {end_speed} mph")
             print()
-            # GPS satellite status
+            # GPS satellite status (red if no fix, green if fix)
             mode_str = {0: "No data", 1: "No fix", 2: "2D fix", 3: "3D fix"}.get(gps_mode, "Unknown")
             if gps_mode >= 2:
+                gps_color = GREEN
                 gps_status = f"GPS: {mode_str} | Sats: {sats_used}/{sats_visible}"
             else:
+                gps_color = RED
                 gps_status = f"GPS: {mode_str} | Sats: {sats_visible} visible (waiting for fix...)"
-            print(gps_status)
+            print(f"{gps_color}{gps_status}{RESET}")
             print()
-            print(f"Speed: {current_speed:.1f} mph")
+            # Speed color: yellow=moving, green=recording, blue=complete
+            if state == State.COMPLETE:
+                speed_color = BLUE
+            elif state == State.RECORDING:
+                speed_color = GREEN
+            elif current_speed > 0:
+                speed_color = YELLOW
+            else:
+                speed_color = RESET
+            print(f"Speed: {speed_color}{current_speed:.1f} mph{RESET}")
             print(f"Status: {state.value}")
 
             if state == State.RECORDING:
